@@ -39,13 +39,13 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ./eks-terraform # Use your environment folder
+        working-directory: ./terraform # Use your environment folder
         shell: bash
       - name: Terraform Apply
         id: apply
         run: |
           terraform apply --auto-approve
-        working-directory: ./eks-terraform # Use your environment folder
+        working-directory: ./terraform # Use your environment folder
         shell: bash
 
   terraform-addons-efs:
