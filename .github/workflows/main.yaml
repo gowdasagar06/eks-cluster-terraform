@@ -36,12 +36,12 @@ jobs:
         with:
           terraform_version: 1.1.9
           terraform_wrapper: false
-      # - name: Terraform Init
-      #   id: init
-      #   run: terraform init
-      #   working-directory: ./terraform # Use your environment folder
-      #   shell: bash
-      - name: Terraform Apply
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./terraform # Use your environment folder
+        shell: bash
+      - name: Terraform Destroy
         id: destroy
         run: |
           terraform destroy --auto-approve 
