@@ -2,9 +2,9 @@
 name: Create EKS and deploy add-ons
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
-on:
-  push:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
 
 env:
   
@@ -36,11 +36,11 @@ jobs:
         with:
           terraform_version: 1.1.9
           terraform_wrapper: false
-      # - name: Terraform Init
-        # id: init
-        # run: terraform init
-        # working-directory: ./terraform # Use your environment folder
-        # shell: bash
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./terraform # Use your environment folder
+        shell: bash
       # - name: Terraform Apply
       #   id: apply
       #   run: |
@@ -53,6 +53,7 @@ jobs:
           terraform destroy --auto-approve 
         working-directory: ./terraform # Use your environment folder
         shell: bash
+
 
   terraform-addons-efs:
     needs: terraform-create-cluster
