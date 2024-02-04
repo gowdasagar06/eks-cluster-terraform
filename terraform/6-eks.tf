@@ -1,5 +1,5 @@
-resource "aws_iam_role" "demo" {
-  name = "eks-cluster-demo"
+resource "aws_iam_role" "eks-cluster" {
+  name = "eks-cluster"
 
   assume_role_policy = <<POLICY
 {
@@ -17,24 +17,22 @@ resource "aws_iam_role" "demo" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "demo-AmazonEKSClusterPolicy" {
+resource "aws_iam_role_policy_attachment" "amazon-eks-cluster-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.demo.name
+  role       = aws_iam_role.eks-cluster.name
 }
 
-variable "cluster_name" {
-  default = "demo"
-  type = string
-  description = "AWS EKS CLuster Name"
-  nullable = false
-}
-
-resource "aws_eks_cluster" "demo" {
+resource "aws_eks_cluster" "cluster" {
   name     = var.cluster_name
-  role_arn = aws_iam_role.demo.arn
-  # version = "1.21"
+  # version  = "1.22"
+  role_arn = aws_iam_role.eks-cluster.arn
 
   vpc_config {
+
+    endpoint_private_access = false
+    endpoint_public_access  = true
+    public_access_cidrs     = ["0.0.0.0/0"]
+
     subnet_ids = [
       aws_subnet.private-ap-south-1a.id,
       aws_subnet.private-ap-south-1b.id,
@@ -43,5 +41,5 @@ resource "aws_eks_cluster" "demo" {
     ]
   }
 
-  depends_on = [aws_iam_role_policy_attachment.demo-AmazonEKSClusterPolicy]
+  depends_on = [aws_iam_role_policy_attachment.amazon-eks-cluster-policy]
 }
