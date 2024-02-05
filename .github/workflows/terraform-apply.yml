@@ -1,31 +1,31 @@
-name: 'CI-terraform-apply-aws-from-master-development'
+# name: 'CI-terraform-apply-aws-from-master-development'
 
-on:
-  push:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
     
-# schedule:
-#   - cron:  '0 17 * * *' # runs on every day at 5pm UTC
+# # schedule:
+# #   - cron:  '0 17 * * *' # runs on every day at 5pm UTC
 
-jobs:
-  terraform-apply-aws-from-master-development-build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30 # default 360
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        ref: 'main'
-        fetch-depth: '1'
-    - name: 'Print dependencies'
-      run: |
-        ./ci-print-dependencies.sh
-    - name: 'CI terraform init plan apply Command'
-      timeout-minutes: 20
-      env:
-        # ENV_NAME: 'development'
-        AWS_ACCESS_KEY_ID: 'AKIA2UC3C54OMFADHWTK'
-        AWS_SECRET_ACCESS_KEY: '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'
-        AWS_DEFAULT_REGION: 'ap-south-1'
-        AWS_DEFAULT_OUTPUT: 'json'
-      run: |
-        ./ci-terraform-init-plan-apply.sh
+# jobs:
+#   terraform-apply-aws-from-master-development-build:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 30 # default 360
+#     steps:
+#     - uses: actions/checkout@v1
+#       with:
+#         ref: 'main'
+#         fetch-depth: '1'
+#     - name: 'Print dependencies'
+#       run: |
+#         ./ci-print-dependencies.sh
+#     - name: 'CI terraform init plan apply Command'
+#       timeout-minutes: 20
+#       env:
+#         # ENV_NAME: 'development'
+#         AWS_ACCESS_KEY_ID: 'AKIA2UC3C54OMFADHWTK'
+#         AWS_SECRET_ACCESS_KEY: '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'
+#         AWS_DEFAULT_REGION: 'ap-south-1'
+#         AWS_DEFAULT_OUTPUT: 'json'
+#       run: |
+#         ./ci-terraform-init-plan-apply.sh
