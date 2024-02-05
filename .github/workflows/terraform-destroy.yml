@@ -1,29 +1,29 @@
-name: 'CI-terraform-destroy-aws-from-master-development'
+# name: 'CI-terraform-destroy-aws-from-master-development'
 
-on:
-  push:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
 
-jobs:
-  terraform-destroy-aws-from-master-development-build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30 # default 360
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        ref: 'main'
-        fetch-depth: '1'
-    - name: 'Print dependencies'
-      run: |
-        ./ci-print-dependencies.sh
-    - name: 'CI terraform destroy Command'
-      timeout-minutes: 20
-      env:
-        AWS_ACCESS_KEY_ID: 'AKIA2UC3C54OMFADHWTK'
-        AWS_SECRET_ACCESS_KEY: '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'
-        AWS_DEFAULT_REGION: 'ap-south-1'
-        AWS_DEFAULT_OUTPUT: 'json'
-      run: |
+# jobs:
+#   terraform-destroy-aws-from-master-development-build:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 30 # default 360
+#     steps:
+#     - uses: actions/checkout@v1
+#       with:
+#         ref: 'main'
+#         fetch-depth: '1'
+#     - name: 'Print dependencies'
+#       run: |
+#         ./ci-print-dependencies.sh
+#     - name: 'CI terraform destroy Command'
+#       timeout-minutes: 20
+#       env:
+#         AWS_ACCESS_KEY_ID: 'AKIA2UC3C54OMFADHWTK'
+#         AWS_SECRET_ACCESS_KEY: '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'
+#         AWS_DEFAULT_REGION: 'ap-south-1'
+#         AWS_DEFAULT_OUTPUT: 'json'
+#       run: |
 
       
-        ./ci-terraform-destroy.sh
+#         ./ci-terraform-destroy.sh
