@@ -9,7 +9,7 @@ on:
 env:
   
   AWS_REGION : "ap-south-1"            # Change to reflect your Region
-  # CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
+  CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
   OIDC_ISSUER : ""                    # Placeholder for the OIDC issues, to be populated at a later stage 
   #AWS_ACCOUNT : "${{ vars.AWS_ACCOUNT_ID }}"   # AWS Account name fetched from the Github actions variable section.
   AWS_ACCOUNT : "528462248584"
