@@ -9,10 +9,10 @@ name: Create EKS and deploy add-ons
 env:
   
   AWS_REGION : "ap-south-1"            # Change to reflect your Region
-  CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
+  # CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
   OIDC_ISSUER : ""                    # Placeholder for the OIDC issues, to be populated at a later stage 
   #AWS_ACCOUNT : "${{ vars.AWS_ACCOUNT_ID }}"   # AWS Account name fetched from the Github actions variable section.
-  AWS_ACCOUNT : "730335473436"
+  AWS_ACCOUNT : "528462248584"
 
 permissions:
   id-token: write
@@ -47,135 +47,12 @@ jobs:
           terraform apply --auto-approve 
         working-directory: ./terraform # Use your environment folder
         shell: bash
-      # - name: Terraform Destroy
-      #   id: destroy
-      #   run: |
-      #     terraform destroy --auto-approve 
-      #   working-directory: ./terraform # Use your environment folder
-      #   shell: bash
-
-
-  terraform-addons-efs:
-    needs: terraform-create-cluster
-    name: "addons-efs"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git clone the repository
-        uses: actions/checkout@v3
-      - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/GitHubAction-AssumeRoleWithAction #change to reflect your IAM role’s ARN
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Create kubeconfig and fetch OIDC issuer
+      - name: Terraform Destroy
+        id: destroy
         run: |
-          mkdir $HOME/.kube 
-          mkdir ./config
-          touch ./config/pod_names
-          touch $HOME/.kube/config
-          # Insert the newly created EKS kubeconfig context inside the Ubuntu runners .kube/config file so that the cluster can be 
-          # accessed from the runner for installing the EKS add-on
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.CLUSTER_NAME }} --kubeconfig $HOME/.kube/config
-          # Fetch the OIDC issuers ARN
-          aws eks describe-cluster --name ${{ env.CLUSTER_NAME }} --query "cluster.identity.oidc.issuer" --output text > ./config/the_issuer
-          # set up the OIDC issuer ARN as part of the GITHUB Environment variable
-          var="$( cat ./config/the_issuer )"
-          ONE_LINE_TEXT=$var
-          echo "OIDC_ISSUER_WITH_ARN=$ONE_LINE_TEXT" >> $GITHUB_ENV
+          terraform destroy --auto-approve 
+        working-directory: ./terraform # Use your environment folder
+        shell: bash
 
-      # install kubectl inside the Ubuntu runner
-      - name: Install kubectl
-        run: |
-          VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
-          curl https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/linux/amd64/kubectl \
-              --progress-bar \
-              --location \
-              --remote-name
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
 
-        # Fetch the OIDC issuer from the OIDC issuer ARN  
-      - name: OIDC issuer
-        uses: bhowell2/github-substring-action@v1.0.0
-        id: oidc
-        with:
-          value: ${{ env.OIDC_ISSUER_WITH_ARN }}
-          index_of_str: "https://oidc.eks.${{ env.AWS_REGION }}.amazonaws.com/id/"
 
-      - name: create IAM Roles & Policies
-        id: create-role
-        run: |
-          # Check any EFS pods are already existing. If exists, then do not create the IAM Role again, else create it.
-          kubectl get po -n kube-system >> ./config/pod_names
-          var4="$( cat ./config/pod_names )"
-          # If an EFS installation does not exists exists, then run the below code section
-          if [[ "$var4" != *"efs-csi-controller"* ]]; then
-            # Fetch the OIDC issuer in a variable and set that as an GITHUB environment variable.
-            var2=${{steps.oidc.outputs.substring}}
-            echo "OIDC_ISSUER=$var2" >> $GITHUB_ENV
-            # Create the IAM role, granting the Kubernetes service account the AssumeRoleWithWebIdentity action.
-            echo "{
-              \"Version\": \"2012-10-17\",
-              \"Statement\": [
-                {
-                  \"Effect\": \"Allow\",
-                  \"Principal\": {
-                    \"Federated\": \"arn:aws:iam::${{ env.AWS_ACCOUNT }}:oidc-provider/oidc.eks.${{ env.AWS_REGION }}.amazonaws.com/id/$var2\"
-                  },
-                  \"Action\": \"sts:AssumeRoleWithWebIdentity\",
-                  \"Condition\": {
-                    \"StringEquals\": {
-                      \"oidc.eks.${{ env.AWS_REGION }}.amazonaws.com/id/$var2:sub\": \"system:serviceaccount:kube-system:efs-csi-controller-sa\"
-                    }
-                  }
-                }
-              ]
-            }" > ./config/trust-policy.json
-            echo "cat ./config/trust-policy.json"
-            aws iam create-role --role-name AmazonEKS_EFS_CSI_DriverRole --assume-role-policy-document file://"./config/trust-policy.json"
-            curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-efs-csi-driver/master/docs/iam-policy-example.json > iam-policy-example.json
-            aws iam create-policy --policy-name AmazonEKS_EFS_CSI_Driver_Policy --policy-document file://"iam-policy-example.json"
-            aws iam attach-role-policy --policy-arn arn:aws:iam::${{ env.AWS_ACCOUNT }}:policy/AmazonEKS_EFS_CSI_Driver_Policy --role-name AmazonEKS_EFS_CSI_DriverRole
-            echo "status=success" >> "$GITHUB_OUTPUT"
-          else 
-            echo "status=skipped" >> "$GITHUB_OUTPUT"
-          fi
-          
-      # Create a Kubernetes service account that's annotated with the ARN of the IAM role that you created. 
-      - name: Create service account
-        id: sa-account
-        if: steps.create-role.outputs.status == 'success'
-        run: |
-          echo "---
-            apiVersion: v1
-            kind: ServiceAccount
-            metadata:
-              labels:
-                app.kubernetes.io/name: aws-efs-csi-driver
-              name: efs-csi-controller-sa
-              namespace: kube-system
-              annotations:
-                eks.amazonaws.com/role-arn: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/AmazonEKS_EFS_CSI_DriverRole" > efs-service-account.yaml
-          kubectl apply -f efs-service-account.yaml   
-
-        # Install EFS driver using helm
-      - name: Helm install and Deploy EFS
-        id: helm
-        if: steps.policy-create.outcome == 'success'
-        run: |
-          # First download helm from its authenticated website
-          wget https://get.helm.sh/helm-v3.9.3-linux-amd64.tar.gz
-          # Extract the content from the compressed file
-          tar xvf helm-v3.9.3-linux-amd64.tar.gz
-          # Move the helm installation to the location /usr/local/bin so that this can be accessed by the Ubuntu runner
-          mv linux-amd64/helm /usr/local/bin/helm
-          # Add the EFS CSI driver repository into the local helm repo and update the local repo
-          helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-          helm repo update
-          # Install EFS CSI Driver
-          helm upgrade -i aws-efs-csi-driver aws-efs-csi-driver/aws-efs-csi-driver \
-          --namespace kube-system \
-          --set image.repository=602401143452.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/eks/aws-efs-csi-driver \
-          --set controller.serviceAccount.create=false \
-          --set controller.serviceAccount.name=efs-csi-controller-sa
