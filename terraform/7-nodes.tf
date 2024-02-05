@@ -1,5 +1,5 @@
 resource "aws_iam_role" "nodes" {
-  name = "eks-node-group"
+  name = "eks-node-group-nodes"
 
   assume_role_policy = jsonencode({
     Statement = [{
@@ -13,25 +13,24 @@ resource "aws_iam_role" "nodes" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "amazon-eks-worker-node-policy" {
+resource "aws_iam_role_policy_attachment" "nodes-AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.nodes.name
 }
 
-resource "aws_iam_role_policy_attachment" "amazon-eks-cni-policy" {
+resource "aws_iam_role_policy_attachment" "nodes-AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.nodes.name
 }
 
-resource "aws_iam_role_policy_attachment" "amazon-ec2-container-registry-read-only" {
+resource "aws_iam_role_policy_attachment" "nodes-AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.nodes.name
 }
 
 resource "aws_eks_node_group" "private-nodes" {
-  cluster_name    = aws_eks_cluster.cluster.name
-  # version         = "1.22"
-  node_group_name = "private-nodes"
+  cluster_name    = aws_eks_cluster.demo.name
+  node_group_name = "public-nodes"
   node_role_arn   = aws_iam_role.nodes.arn
 
   subnet_ids = [
@@ -43,8 +42,8 @@ resource "aws_eks_node_group" "private-nodes" {
   instance_types = ["t3.small"]
 
   scaling_config {
-    desired_size = 2
-    max_size     = 5
+    desired_size = 3
+    max_size     = 6
     min_size     = 0
   }
 
@@ -56,14 +55,35 @@ resource "aws_eks_node_group" "private-nodes" {
     role = "general"
   }
 
-  depends_on = [
-    aws_iam_role_policy_attachment.amazon-eks-worker-node-policy,
-    aws_iam_role_policy_attachment.amazon-eks-cni-policy,
-    aws_iam_role_policy_attachment.amazon-ec2-container-registry-read-only,
-  ]
+  # taint {
+  #   key    = "team"
+  #   value  = "devops"
+  #   effect = "NO_SCHEDULE"
+  # }
 
-  # Allow external changes without Terraform plan difference
-  lifecycle {
-    ignore_changes = [scaling_config[0].desired_size]
-  }
+  # launch_template {
+  #   name    = aws_launch_template.eks-with-disks.name
+  #   version = aws_launch_template.eks-with-disks.latest_version
+  # }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.nodes-AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.nodes-AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.nodes-AmazonEC2ContainerRegistryReadOnly,
+  ]
 }
+
+# resource "aws_launch_template" "eks-with-disks" {
+#   name = "eks-with-disks"
+
+#   key_name = "local-provisioner"
+
+#   block_device_mappings {
+#     device_name = "/dev/xvdb"
+
+#     ebs {
+#       volume_size = 50
+#       volume_type = "gp2"
+#     }
+#   }
+# }
