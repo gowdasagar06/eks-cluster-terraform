@@ -5,7 +5,6 @@ name: Create EKS and deploy add-ons
 on:
   push:
     branches: [ main ]
-
 env:
   
   AWS_REGION : "ap-south-1"            # Change to reflect your Region
@@ -21,7 +20,7 @@ permissions:
 jobs:
   terraform-create-cluster:
     name: "create-cluster"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
       - name: Git clone the repository # Clone the repo
         uses: actions/checkout@v3
