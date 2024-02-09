@@ -11,7 +11,7 @@ provider "helm" {
 }
 
 resource "helm_release" "aws-load-balancer-controller" {
-  name = "aws-load-balancer-controller-1"
+  name = "aws-load-balancer-controller"
 
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"

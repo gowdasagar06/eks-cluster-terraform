@@ -26,7 +26,6 @@ variable "cluster_name" {
   default = "demo"
   type = string
   description = "AWS EKS CLuster Name"
- 
 }
 
 resource "aws_eks_cluster" "demo" {
