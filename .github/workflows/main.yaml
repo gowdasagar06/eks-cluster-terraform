@@ -2,17 +2,17 @@
 name: Create EKS and deploy add-ons
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
-# on: 
-#   push:
-#     branches:
-#       - main
-env:
+on: 
+  push:
+    branches:
+      - main
+# env:
   
-  AWS_REGION : "ap-south-1"            # Change to reflect your Region
-  CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
-  OIDC_ISSUER : ""                    # Placeholder for the OIDC issues, to be populated at a later stage 
-  #AWS_ACCOUNT : "${{ vars.AWS_ACCOUNT_ID }}"   # AWS Account name fetched from the Github actions variable section.
-  AWS_ACCOUNT : "528462248584"
+#   AWS_REGION : "ap-south-1"            # Change to reflect your Region
+#   CLUSTER_NAME : "demo"               # Change to reflect the name of your cluster
+#   OIDC_ISSUER : ""                    # Placeholder for the OIDC issues, to be populated at a later stage 
+#   #AWS_ACCOUNT : "${{ vars.AWS_ACCOUNT_ID }}"   # AWS Account name fetched from the Github actions variable section.
+#   AWS_ACCOUNT : "528462248584"
 
 # permissions:
 #   id-token: write
@@ -36,23 +36,23 @@ jobs:
         with:
           terraform_version: 1.1.9
           terraform_wrapper: false
-      - name: Terraform Init
-        id: init
-        run: terraform init
-        working-directory: ./terraform # Use your environment folder
-        shell: bash
+      # - name: Terraform Init
+      #   id: init
+      #   run: terraform init
+      #   working-directory: ./terraform # Use your environment folder
+      #   shell: bash
       - name: Terraform Apply
         id: apply
         run: |
           terraform apply --auto-approve 
         working-directory: ./terraform # Use your environment folder
         shell: bash
-      - name: Terraform Destroy
-        id: destroy
-        run: |
-          terraform destroy --auto-approve 
-        working-directory: ./terraform # Use your environment folder
-        shell: bash
+      # - name: Terraform Destroy
+      #   id: destroy
+      #   run: |
+      #     terraform destroy --auto-approve 
+      #   working-directory: ./terraform # Use your environment folder
+      #   shell: bash
 
 
 
