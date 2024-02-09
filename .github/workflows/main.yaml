@@ -21,7 +21,7 @@ env:
 jobs:
   terraform-create-cluster:
     name: "create-cluster"
-    runs-on: [self-hosted]
+    runs-on: [aws-terraform]
     steps:
       - name: Git clone the repository # Clone the repo
         uses: actions/checkout@v3
