@@ -1,10 +1,10 @@
 # This is a basic workflow to help you get started with Actions
 name: Create EKS and deploy add-ons
 
-# on: 
-#   push:
-#     branches:
-#       - main
+on: 
+  push:
+    branches:
+      - main
       
 jobs:
   terraform-create-cluster:
