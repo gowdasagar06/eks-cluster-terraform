@@ -26,19 +26,19 @@ jobs:
         working-directory: ./terraform # Use your environment folder
         shell: bash
         
-      - name: Terraform Apply
-        id: apply
-        run: |
-          terraform apply --auto-approve 
-        working-directory: ./terraform # Use your environment folder
-        shell: bash
-        
-      # - name: Terraform Destroy
-      #   id: destroy
+      # - name: Terraform Apply
+      #   id: apply
       #   run: |
-      #     terraform destroy --auto-approve 
+      #     terraform apply --auto-approve 
       #   working-directory: ./terraform # Use your environment folder
       #   shell: bash
+        
+      - name: Terraform Destroy
+        id: destroy
+        run: |
+          terraform destroy --auto-approve 
+        working-directory: ./terraform # Use your environment folder
+        shell: bash
 
 
 
