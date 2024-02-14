@@ -42,7 +42,7 @@ resource "aws_eks_node_group" "private-nodes" {
   instance_types = ["t2.medium"]
 
   scaling_config {
-    desired_size = 2
+    desired_size = var.node_desired_size
     max_size     = 5
     min_size     = 0
   }
