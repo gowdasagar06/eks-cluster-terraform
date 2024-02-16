@@ -32,6 +32,6 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller_attach_k
 }
 
 resource "aws_iam_instance_profile" "karpenter" {
-  name = "KarpenterNodeInstanceProfile-6"
+  name = "KarpenterNodeInstanceProfile-7"
   role = aws_iam_role.nodes.name
 }
